@@ -68,7 +68,6 @@ shouldAddStorePayment:(SKPayment *)payment
                 NSString *key = RCTKeyForInstance(transaction.payment.productIdentifier);
                 RCTResponseSenderBlock callback = _callbacks[key];
                 NSDictionary *purchase = [self getPurchaseData:transaction];
-
                 if (callback) {
                     callback(@[[NSNull null], purchase]);
                     [_callbacks removeObjectForKey:key];
@@ -163,15 +162,7 @@ restoreCompletedTransactionsFailedWithError:(NSError *)error
         NSMutableArray *productsArrayForJS = [NSMutableArray array];
         for(SKPaymentTransaction *transaction in queue.transactions){
             if(transaction.transactionState == SKPaymentTransactionStateRestored) {
-<<<<<<< HEAD
-
                 NSDictionary *purchase = [self getPurchaseData:transaction];
-
-=======
-
-                NSDictionary *purchase = [self getPurchaseData:transaction];
-
->>>>>>> chirag04/master
                 [productsArrayForJS addObject:purchase];
                 [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
             }
