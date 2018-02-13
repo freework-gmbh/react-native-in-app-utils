@@ -17,16 +17,21 @@ A react-native wrapper for handling in-app purchases.
 
 ### Add it to your project
 
-1. Make sure you have `rnpm` installed: `npm install rnpm -g`
+1. Install: `npm i --save react-native-in-app-utils`
 
-2. Install with rnpm: `rnpm install react-native-in-app-utils`
+2. Link: `react-native link react-native-in-app-utils`
 
-3. Whenever you want to use it within React code now you just have to do: `var InAppUtils = require('NativeModules').InAppUtils;`
-   or for ES6:
+3. Use:
 
 ```
-import { NativeModules } from 'react-native'
-const { InAppUtils } = NativeModules
+var InAppUtils = require('react-native-in-app-utils');
+```
+
+or
+
+```
+// ES6
+import InAppUtils from 'react-native-in-app-utils';
 ```
 
 
@@ -64,8 +69,8 @@ InAppUtils.loadProducts(products, (error, products) => {
 ### Checking if payments are allowed
 
 ```javascript
-InAppUtils.canMakePayments((canMakePayments) => {
-   if(!canMakePayments) {
+InAppUtils.canMakePayments((error, enabled) => {
+   if(!enabled) {
       Alert.alert('Not Allowed', 'This device is not allowed to make purchases. Please check restrictions on device');
    }
 })
@@ -97,11 +102,14 @@ https://stackoverflow.com/questions/29255568/is-there-any-way-to-know-purchase-m
 
 | Field                 | Type   | Description                                        |
 | --------------------- | ------ | -------------------------------------------------- |
+| originalTransactionDate        | number | The original transaction date (ms since epoch)     |
+| originalTransactionIdentifier  | string | The original transaction identifier                |
 | transactionDate       | number | The transaction date (ms since epoch)              |
 | transactionIdentifier | string | The transaction identifier                         |
 | productIdentifier     | string | The product identifier                             |
 | transactionReceipt    | string | The transaction receipt as a base64 encoded string |
 
+**NOTE:**  `originalTransactionDate` and `originalTransactionIdentifier` are only available for subscriptions that were previously cancelled or expired.
 
 ### Restore payments
 
@@ -111,7 +119,7 @@ InAppUtils.restorePurchases((error, response) => {
       Alert.alert('itunes Error', 'Could not connect to itunes store.');
    } else {
       Alert.alert('Restore Successful', 'Successfully restores all your purchases.');
-      
+
       if (response.length === 0) {
         Alert.alert('No Purchases', "We didn't find any purchases to restore.");
         return;
@@ -162,7 +170,7 @@ InAppUtils.receiptData((error, receiptData)=> {
 Check if in-app purchases are enabled/disabled.
 
 ```javascript
-InAppUtils.canMakePayments((enabled) => {
+InAppUtils.canMakePayments((error, enabled) => {
   if(enabled) {
     Alert.alert('IAP enabled');
   } else {
@@ -173,6 +181,35 @@ InAppUtils.canMakePayments((enabled) => {
 
 **Response:** The enabled boolean flag.
 
+### Listen for purchase events
+
+Can be used for purchases initiated from the App Store or subscription renewals.
+
+```javascript
+import InAppUtils from 'react-native-in-app-utils';
+
+const listener = InAppUtils.addListener('purchaseCompleted', purchase => {
+  if(purchase && purchase.productIdentifier) {
+      Alert.alert('Purchase Successful', 'Your Transaction ID is ' + purchase.transactionIdentifier);
+      //unlock store here.
+   }
+});
+```
+
+to remove listener:
+
+```javascript
+listener.remove();
+```
+
+**Response:** A transaction object with the following fields:
+
+| Field                 | Type   | Description                                        |
+| --------------------- | ------ | -------------------------------------------------- |
+| transactionDate       | number | The transaction date (ms since epoch)              |
+| transactionIdentifier | string | The transaction identifier                         |
+| productIdentifier     | string | The product identifier                             |
+| transactionReceipt    | string | The transaction receipt as a base64 encoded string |
 
 ## Testing
 
